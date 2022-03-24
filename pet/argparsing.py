@@ -125,3 +125,5 @@ parser.add_argument("--do_test", action="store_true",
                     help="Whether to perform evaluation on the test set", )
 
 # fmt: on
+
+parser.add_argument("--update_mode", default="full", type=str, help="update_mode")

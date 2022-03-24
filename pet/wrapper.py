@@ -54,6 +54,7 @@ from transformers import (
     GPT2Config,
     GPT2LMHeadModel,
     GPT2Tokenizer,
+    GPT2ForSequenceClassification
 )
 from transformers import __version__ as transformers_version
 from transformers.data.metrics import simple_accuracy
@@ -109,7 +110,11 @@ MODEL_CLASSES = {
         SEQUENCE_CLASSIFIER_WRAPPER: AlbertForSequenceClassification,
         MLM_WRAPPER: AlbertForMaskedLM,
     },
-    "gpt2": {"config": GPT2Config, "tokenizer": GPT2Tokenizer, MLM_WRAPPER: GPT2LMHeadModel},
+    "gpt2": {
+        "config": GPT2Config, 
+        "tokenizer": GPT2Tokenizer, MLM_WRAPPER: GPT2LMHeadModel,
+        SEQUENCE_CLASSIFIER_WRAPPER: GPT2ForSequenceClassification,
+    },
 }
 
 EVALUATION_STEP_FUNCTIONS = {
@@ -139,6 +144,7 @@ class WrapperConfig(object):
             pattern_id: int = 0,
             verbalizer_file: str = None,
             cache_dir: str = None,
+            update_mode: str = 'full',
     ):
         """
         Create a new config.
@@ -163,6 +169,7 @@ class WrapperConfig(object):
         self.verbalizer_file = verbalizer_file
         self.cache_dir = cache_dir
         self.loggers_initialized = False
+        self.update_mode = update_mode
 
 
 class TransformerModelWrapper:
@@ -188,11 +195,37 @@ class TransformerModelWrapper:
         )  # type: PreTrainedTokenizer
 
         if self.config.model_type == "gpt2":
+            model_config.pad_token_id = model_config.bos_token_id
             self.tokenizer.pad_token, self.tokenizer.mask_token = self.tokenizer.eos_token, self.tokenizer.eos_token
 
         self.model = model_class.from_pretrained(
             config.model_name_or_path, config=model_config, cache_dir=config.cache_dir if config.cache_dir else None
         )
+
+        # Initialize our Trainer
+        if config.update_mode == 'bitfit':
+            for name, param in self.model.named_parameters():
+                if "bert" in config.model_name_or_path and "classifier" in name:
+                    continue
+                if "gpt2" in config.model_name_or_path and "score" in name:
+                    continue
+                if not "bias" in name:
+                    param.requires_grad = False
+        elif config.update_mode == "headonly":
+            for name, param in self.model.named_parameters():
+                if "bert" in config.model_name_or_path and "classifier" in name:
+                    continue
+                if "gpt2" in config.model_name_or_path and "score" in name:
+                    continue
+                param.requires_grad = False
+        elif config.update_mode == "full":
+            for name, param in self.model.named_parameters():
+                param.requires_grad = True
+        else:
+            raise NotImplementedError("Unsupported mode -", config.update_mode)
+
+        for name, param in self.model.named_parameters():
+            print(name, param.requires_grad)
 
         self.preprocessor = PREPROCESSORS[self.config.wrapper_type](
             self, self.config.task_name, self.config.pattern_id, self.config.verbalizer_file

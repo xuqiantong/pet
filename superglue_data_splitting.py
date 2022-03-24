@@ -2,7 +2,8 @@ import os
 import random
 import shutil
 
-TASK_DEV_SIZES = {"boolq": 500, "cb": 50, "copa": 50, "multirc": 50, "record": 7500, "rte": 250, "wic": 100, "wsc": 50}
+# TASK_DEV_SIZES = {"boolq": 500, "cb": 50, "copa": 50, "multirc": 50, "record": 7500, "rte": 250, "wic": 100, "wsc": 50}
+TASK_DEV_SIZES = {"BoolQ": 500, "CB": 50, "COPA": 50, "MultiRC": 50, "ReCoRD": 7500, "RTE": 250, "WiC": 100, "WSC": 50}
 
 
 def file_len(fname):
@@ -19,14 +20,14 @@ def file_len(fname):
 if __name__ == "__main__":
     for task_name, size in TASK_DEV_SIZES.items():
         try:
-            os.makedirs(os.path.join("split_data", task_name))
+            os.makedirs(os.path.join("split_data", task_name.lower()))
         except FileExistsError:
             pass
         train_file_path = os.path.join("data", task_name, "train.jsonl")
         test_file_path = os.path.join("data", task_name, "val.jsonl")
-        new_train_file_path = os.path.join("split_data", task_name, "train.jsonl")
-        dev_file_path = os.path.join("split_data", task_name, "val.jsonl")
-        new_test_file_path = os.path.join("split_data", task_name, "test.jsonl")
+        new_train_file_path = os.path.join("split_data", task_name.lower(), "train.jsonl")
+        dev_file_path = os.path.join("split_data", task_name.lower(), "val.jsonl")
+        new_test_file_path = os.path.join("split_data", task_name.lower(), "test.jsonl")
         total_lines = file_len(train_file_path)
         print(f"{task_name}: {size} out of {total_lines}")
         indexes = list(range(total_lines))
