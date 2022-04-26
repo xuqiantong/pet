@@ -51,7 +51,7 @@ parser.add_argument("--pet_max_seq_length", default=256, type=int,
                          "this will be truncated, sequences shorter will be padded.", )
 parser.add_argument("--pet_per_gpu_train_batch_size", default=4, type=int,
                     help="Batch size per GPU/CPU for PET training.")
-parser.add_argument("--pet_per_gpu_eval_batch_size", default=8, type=int,
+parser.add_argument("--pet_per_gpu_eval_batch_size", default=4, type=int,
                     help="Batch size per GPU/CPU for PET evaluation.")
 parser.add_argument("--pet_per_gpu_unlabeled_batch_size", default=4, type=int,
                     help="Batch size per GPU/CPU for auxiliary language modeling examples in PET.", )
@@ -72,7 +72,7 @@ parser.add_argument("--sc_max_seq_length", default=256, type=int,
                          "Sequences longer than this will be truncated, sequences shorter will be padded.", )
 parser.add_argument("--sc_per_gpu_train_batch_size", default=4, type=int,
                     help="Batch size per GPU/CPU for sequence classifier training.", )
-parser.add_argument("--sc_per_gpu_eval_batch_size", default=8, type=int,
+parser.add_argument("--sc_per_gpu_eval_batch_size", default=4, type=int,
                     help="Batch size per GPU/CPU for sequence classifier evaluation.", )
 parser.add_argument("--sc_per_gpu_unlabeled_batch_size", default=4, type=int,
                     help="Batch size per GPU/CPU for unlabeled examples used for distillation.", )
