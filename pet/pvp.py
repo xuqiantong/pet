@@ -321,6 +321,7 @@ class YahooPVP(PVP):
 class MnliPVP(PVP):
     VERBALIZER_A = {"contradiction": ["Wrong"], "entailment": ["Right"], "neutral": ["Maybe"]}
     VERBALIZER_B = {"contradiction": ["No"], "entailment": ["Yes"], "neutral": ["Maybe"]}
+    VERBALIZER_C = {"contradiction": ["False"], "entailment": ["True"], "neutral": ["Neither"]}  
 
     def get_parts(self, example: InputExample) -> FilledPattern:
         text_a = self.shortenable(self.remove_final_punc(example.text_a))
@@ -330,10 +331,14 @@ class MnliPVP(PVP):
             return ['"', text_a, '" ?'], [self.mask, ', "', text_b, '"']
         elif self.pattern_id == 1 or self.pattern_id == 3:
             return [text_a, "?"], [self.mask, ",", text_b]
+        elif self.pattern_id == 10:
+            return [text_a, " Question: ", text_b, " True, False or Neither?", self.mask], []
 
     def verbalize(self, label) -> List[str]:
         if self.pattern_id == 0 or self.pattern_id == 1:
             return MnliPVP.VERBALIZER_A[label]
+        elif self.pattern_id == 10:
+            return MnliPVP.VERBALIZER_C[label]
         return MnliPVP.VERBALIZER_B[label]
 
 
